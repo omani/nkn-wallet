@@ -94,7 +94,7 @@ func main() {
 }
 ```
 
-### Use underlying nkn-sdk-go
+### Use with nkn-sdk-go
 ```go
 package main
 
