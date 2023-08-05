@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	cmd "github.com/omani/nkn-wallet/cmd/commands"
+	cmd "github.com/omani/nkn-wallet/cmd/nkn-wallet/commands"
 )
 
 func main() {
