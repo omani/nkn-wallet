@@ -60,10 +60,21 @@ func runTransfer() error {
 	}
 	checkerr(err)
 
-	txhash, err := wallet.Transfer(to, amount, nil)
+	if amount == "all" {
+		a, err := wallet.Balance()
+		checkerr(err)
+		amount = a.String()
+	}
+	a, err := common.StringToFixed64(amount)
+	checkerr(err)
+	if a == 0 || amount == "0" {
+		cobra.CheckErr("Trying to send amount of 0. Aborting!")
+	}
+
+	txhash, err := wallet.Transfer(to, a.String(), nil)
 	checkerr(err)
 
-	fmt.Printf("Successfully sent funds from NKN address %s to NKN address %s. txHash: %s\n", wallet.Address(), to, txhash)
+	fmt.Printf("Successfully sent %s NKN from %s to %s. txHash: %s\n", a, wallet.Address(), to, txhash)
 
 	return nil
 }
