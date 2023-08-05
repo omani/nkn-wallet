@@ -321,6 +321,32 @@ Successfully sent 1 NKN from NKNVmZQZcDrgdMJKdgRfz2gn5ZdTAyro5uHm to NKNCSjyCsuD
 
 For information refer to the help menu with `nkn-wallet help` or `nkn-wallet [cmd] help`.
 
+## File Format
+The file format of the wallet looks like this:
+```
+  ...
+  {
+    "id": 5,
+    "address": "NKNRdA5G8U5kSQ68Q5beeAuzGfvp2vEiRzEr",
+    "armor": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCBqWjFpT01iV2g0VzZ6aW9L\nM21tajZnIDE4Cm1BZFNnNjhzdWR4NGQzUUR6TzBKV2xSOVJFZXl4ZW1oVDZJZWdh\nSzhtRWMKLS0tIHRBSlp0ZkdKaWNHamd4b1Vab250WFF3TTFxVThXUFFyUVQxRDRy\nWGNqQTgK7M8ZKYVVvQGP0LEKwiEO9lN0mTK3MUjnO4X98nEerJOh+kJZnziJPkxL\nxrKvpsGOCurMSkuTLbU10NlQfuc6Bv1oHSYP1+GYcmwrvJgI/6B00atlHGY/jmeb\nMRo5D1mJBxhhgdWe3udvjMB264k46R/oIGKkxeCC5nA/eLToqvplb0qDv6FMapDe\nScrKSg50eNuaoe3yWxZlP8bS1RsPDJtIgJ+cTE0B66xt6G8rLQX80B4xp72AzHnh\nXn182U0+2i5PjYIpFZsoKdIKTD4eXXDF0aH8BfpYm0bHHM32vRS2rW3pCYz0mF35\nBzBHCel5A3kXhksSCgze7w==\n-----END AGE ENCRYPTED FILE-----\n",
+    "alias": "personal"
+  },
+  {
+    "id": 7,
+    "address": "NKNHyoTeS3XEWFfEMuBXGKi16RP6rSqjr3bU",
+    "armor": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCA2YkZDbmlrN3J6QkpIK0xE\naXNEcDlnIDE4Cnp0KzFOeWNQRmM5MjYzajI2L3NzK3RaeFY2WWZNd2YyTzNLRWJH\na0o1dTgKLS0tIHFNdTFTc0pXUVMrdVVLSjlsREU1RkdJamMrWit2cXVoZjVvdzNI\naDZQVlUKVzxvmCI4A9+tVmEzKnTADJ1T2yAVoWQ8pUJ7yuPXOR3Kf1VPc+iwGMsF\n5Tdoom46Ii/VtBG8DPpFVNflehqdS5zAqjvB3UQO9qtUR1ZRL2goG20UtVbrS0Np\nWHEgi/gr+QZho6rYd9wr1M691rbDrOSgzQUNEdALczrwe/SBFDXGMPGRlGP5SAyP\nX/ZhQaYO6QTwdjnpbEzYsZ+OoijyAT9052RDhQwtCYKuZ4p4NxITmFM6TAdgfo3P\nR5XHKHVzGY/JLsqFQcp1nMGPy5XNghnDvxk+v/TqA6BEe4qn4YoloZ5cFjvmf4Xp\n1Mem0tXgEHxIt8rO4enQNg==\n-----END AGE ENCRYPTED FILE-----\n",
+    "alias": "github-donations"
+  },
+  {
+    "id": 8,
+    "address": "NKNKQ34u5DeSxfi5VN1HDtG9iuQdhmsxAx7m",
+    "armor": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCBjbTRUK3Z2N2xLWCtnQk1W\nVjlaVEdRIDE4CmNkYm9DVThDRFNVdE53elhSK0l3b2F0SFpqdUxNbVY0OEFDdmd4\nZ0FlSHMKLS0tIHFIaVRmZVBCUDhOWUJVZjlJUE9KU2F5clpvejMrM2tuakVJUTJQ\nRENjU0kK1ov/aEbZzd+WUV+i47MpGR0LdhNWBXewUjwSrqIPH8xGsm8hwmvs/j5v\nGTSO9ndzzFdizU93zhvsXoQIZmzkm5OvTRXCj6IUj/B0UlCtcUHkcvUFK9KJQ7Uc\nuUVpxazelIDCg5Oi3+tGrT45KqKYiwnYwPKbk5zj7nVNvOVEST15m2MjPM4cWq9W\ny17jdKrHekeIOvXGiLau3ZGEUh7Z9XtJh9BAI20lN9upMrpQYZzn9vuKQZByznI5\n5ge3CbAs9F8ldD4TocSbg8vabQ3iQwPanxZQZiXrn6u4+fQJnXaw/LXUpJITg0Az\n7gX1fz/Ea6FVyk+ZggB3Ig==\n-----END AGE ENCRYPTED FILE-----\n",
+    "alias": "office"
+  },
+  ...
+```
+The age encryption is stored as an armor in the `armor` field. the associated NKN address, id and alias are cleartext.
+
 ---
 
 # Contribution
