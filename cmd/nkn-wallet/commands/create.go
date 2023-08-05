@@ -51,6 +51,8 @@ func runCreate() error {
 		return err
 	}
 
+	fmt.Println()
+	fmt.Println("Account information:")
 	fmt.Printf("Seed: %s\n", hex.EncodeToString(wallet.Seed()))
 	fmt.Printf("Address: %s\n", wallet.Address())
 	if len(alias) > 0 {
