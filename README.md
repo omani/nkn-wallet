@@ -336,7 +336,7 @@ Use the special keyword "all" to move all funds.
 ```
 $ nkn-wallet move --from-id 11 --to-id 10 --amount all
 Password:
-Successfully sent 1 NKN from NKNVmZQZcDrgdMJKdgRfz2gn5ZdTAyro5uHm to NKNCSjyCsuDbJcSrRW4kG2atu4SW6sTJkx4o. txHash: ba2313cdffa1060a4f28474a01ef19dc09ea5e042398eb56593870542e664cbb
+Successfully sent 1 NKN from NKNCSjyCsuDbJcSrRW4kG2atu4SW6sTJkx4o to NKNVmZQZcDrgdMJKdgRfz2gn5ZdTAyro5uHm. txHash: 61c8035b27b8232faad2adf641922dea09d4e925e4e5230d73c9a55ae8917549
 ```
 
 
