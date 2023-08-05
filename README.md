@@ -245,6 +245,8 @@ Use "nkn-wallet [command] --help" for more information about a command.
 $ nkn-wallet --path usethiswallet.json create --alias mynewaccount -s
 Password:
 Re-enter Password:
+
+Account information:
 Seed: c2017a52472f4e616b1ee028297c8609d09fdec90db8522b978df85df9a14d10
 Address: NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3
 Alias: newaccount
@@ -257,6 +259,8 @@ Account saved successfully.
 $ nkn-wallet --path usethiswallet.json create --alias github-donations -s
 Password:
 Re-enter Password:
+
+Account information:
 Seed: de392b438d5020b46123f461d0c1db50c2eef244fb6e213c20bfaa3a4b2ae237
 Address: NKND1ejSRWBExoq8t4DWpPHaK5BMBe4yifTN
 Alias: github-donations
