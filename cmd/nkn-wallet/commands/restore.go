@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	"github.com/nknorg/nkn/v2/util/password"
 	nknwallet "github.com/omani/nkn-wallet"
@@ -28,6 +29,12 @@ func init() {
 }
 
 func runRestore() error {
+	store := nknwallet.NewStore(path)
+	if len(alias) > 0 {
+		if ok := store.IsExistWalletByAlias(alias); ok {
+			cobra.CheckErr(fmt.Sprintf("Account with alias %s already exists.", alias))
+		}
+	}
 	if len(seed) == 0 {
 		s, err := password.GetPassword("Seed")
 		checkerr(err)
@@ -38,8 +45,6 @@ func runRestore() error {
 		checkerr(err)
 		passwd = string(pass)
 	}
-
-	store := nknwallet.NewStore(path)
 	seedecoded, err := hex.DecodeString(seed)
 	checkerr(err)
 	wallet, err := store.RestoreFromSeed(seedecoded, []byte(passwd), alias)

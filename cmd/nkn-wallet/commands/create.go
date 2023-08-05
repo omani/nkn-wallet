@@ -37,6 +37,10 @@ func checkerr(err error) {
 }
 
 func runCreate() error {
+	store := nknwallet.NewStore(path)
+	if ok := store.IsExistWalletByAlias(alias); ok {
+		cobra.CheckErr(fmt.Sprintf("Account with alias %s already exists.", alias))
+	}
 	if len(passwd) == 0 {
 		pass, err := password.GetConfirmedPassword()
 		if err != nil {
@@ -45,7 +49,6 @@ func runCreate() error {
 		passwd = string(pass)
 	}
 
-	store := nknwallet.NewStore(path)
 	wallet, err := store.NewWallet([]byte(passwd), alias, nil)
 	if err != nil {
 		return err

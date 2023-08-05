@@ -55,6 +55,24 @@ func NewStore(path string) *Store {
 	}
 }
 
+func (s *Store) IsExistWalletByAlias(alias string) bool {
+	for _, w := range s.wallets {
+		if w.Alias == alias {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Store) IsExistWalletByIndex(index int) bool {
+	for _, w := range s.wallets {
+		if w.ID == index {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Store) GetWallets() []*Wallet {
 	return s.wallets
 }
@@ -204,7 +222,7 @@ func (s *Store) GetWalletByAlias(alias string, password []byte) (*Wallet, error)
 
 func (s *Store) getNextID() int {
 	if s.wallets == nil {
-		return 1
+		return 0
 	}
 	return s.wallets[len(s.wallets)-1].ID + 1
 }

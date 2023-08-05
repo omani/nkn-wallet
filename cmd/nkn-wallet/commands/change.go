@@ -33,7 +33,9 @@ var aliasCmd = &cobra.Command{
 	},
 }
 
-var ()
+var (
+	newalias string
+)
 
 func init() {
 	rootCmd.AddCommand(changeCmd)
@@ -41,7 +43,10 @@ func init() {
 	changeCmd.AddCommand(aliasCmd)
 
 	changeCmd.PersistentFlags().StringVarP(&alias, "alias", "a", "", "Alias of account.")
+	changeCmd.PersistentFlags().StringVar(&newalias, "newalias", "", "New alias of account.")
 	changeCmd.PersistentFlags().IntVarP(&index, "index", "i", 0, "Index of account.")
+
+	changeCmd.MarkFlagsMutuallyExclusive("alias", "index")
 }
 
 func runChangePassword() error {
@@ -81,32 +86,34 @@ func runChangePassword() error {
 }
 
 func runChangeAlias() error {
+	store := nknwallet.NewStore(path)
+
+	if ok := store.IsExistWalletByAlias(alias); !ok {
+		cobra.CheckErr(fmt.Sprintf("Wallet with alias %s does not exist.", alias))
+	}
+	if ok := store.IsExistWalletByAlias(newalias); ok {
+		cobra.CheckErr(fmt.Sprintf("Account with alias %s already exists.", alias))
+	}
 	if len(passwd) == 0 {
 		pass, err := password.GetPassword("Current password")
 		checkerr(err)
 		passwd = string(pass)
 	}
 
-	store := nknwallet.NewStore(path)
-
 	var wallet *nknwallet.Wallet
 	var err error
 	if len(alias) > 0 {
 		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	}
-	if index > 0 {
+	} else if index > 0 {
 		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
 	}
+
 	checkerr(err)
-
-	store.DeleteWalletByIndex(index)
-
-	w, err := store.RestoreFromSeed(wallet.Seed(), []byte(passwd), alias)
+	store.DeleteWalletByIndex(wallet.ID)
+	w, err := store.RestoreFromSeed(wallet.Seed(), []byte(passwd), newalias)
 	checkerr(err)
-
 	err = store.SaveWallet(w)
 	checkerr(err)
-
 	fmt.Println("Successfully changed alias of account.")
 
 	return nil
