@@ -367,6 +367,8 @@ The file format of the wallet looks like this:
   ...
 ```
 
+The age encryption is stored as an armor in the `armor` field. the associated NKN address, id and alias are cleartext.
+
 The base64 decoded armor looks like this:
 ```
 $ echo "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCBqWjFpT01iV2g0VzZ6aW9L
@@ -390,8 +392,6 @@ JK-5P~:h&rltѫef?g19Ya՞ov8 bp?xeoJLjIJtxۚ[e?
 L>]pXFm ]0G     yyK
 
 ```
-
-The age encryption is stored as an armor in the `armor` field. the associated NKN address, id and alias are cleartext.
 
 ---
 
