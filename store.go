@@ -115,7 +115,8 @@ func (s *Store) ListWallets() error {
 		return errors.New("No wallet found or wallet has no accounts.")
 	}
 	t := table.NewWriter()
-	// t.SetStyle(table.StyleRounded)
+	t.SetStyle(table.StyleRounded)
+	t.Style().Options.DrawBorder = false
 	mw := io.MultiWriter(os.Stdout)
 	t.SetOutputMirror(mw)
 	t.AppendHeader(table.Row{"ID", "Alias", "Address"})

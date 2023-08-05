@@ -82,6 +82,8 @@ func runShowBalance() error {
 	balance, err := wallet.OpenAPI().GetBalance()
 	checkerr(err)
 	t := table.NewWriter()
+	t.SetStyle(table.StyleRounded)
+	t.Style().Options.DrawBorder = false
 	t.SetOutputMirror(os.Stdout)
 	t.SetAlign([]text.Align{text.AlignCenter, text.AlignCenter})
 	t.AppendHeader(table.Row{"id", "alias", "address", "balance"})
@@ -113,6 +115,8 @@ func runShowInfo() error {
 	}
 	checkerr(err)
 	t := table.NewWriter()
+	t.SetStyle(table.StyleRounded)
+	t.Style().Options.DrawBorder = false
 	t.SetOutputMirror(os.Stdout)
 	t.SetAlign([]text.Align{text.AlignCenter, text.AlignCenter})
 	t.AppendHeader(table.Row{"id", "alias", "address", "pubkey", "seed"})
@@ -158,6 +162,8 @@ func runShowTxn() error {
 	}
 
 	t := table.NewWriter()
+	t.SetStyle(table.StyleRounded)
+	t.Style().Options.DrawBorder = false
 	t.SetOutputMirror(os.Stdout)
 	t.SetAlign([]text.Align{text.AlignCenter, text.AlignCenter})
 	t.AppendHeader(table.Row{"created at", "block height", "txn hash", "sender", "recipient", "amount"})
