@@ -12,7 +12,7 @@ Upcoming releases will include the possibility for encryption by SSH public key 
 
 ---
 
-While nkn-wallet has its own wallet implementation the underlying SDK functionality remains the same and is compatible to nkn-sdk-go. The move to age as an encryption toolkit results in overall less loc since there is no need to implement scrypt functionality manually. This wallet implementation uses age's internal scrypt feature which is identical to the original NKN wallet implementation performance-wise and slightly enhanced security-wise through the use of an additional layer, that is, the derived scrypt key being encrypted again with a [ChaCha20-Poly1305](https://pkg.go.dev/golang.org/x/crypto/chacha20poly1305) [AEAD](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data_(AEAD)).
+While nkn-wallet has its own wallet implementation the underlying SDK functionality remains the same and is compatible with nkn-sdk-go. The move to age as an encryption toolkit results in overall less loc since there is no need to implement scrypt functionality manually. This wallet implementation uses age's internal scrypt feature which is identical to the original NKN wallet implementation performance-wise and slightly enhanced security-wise through the use of an additional layer, that is, the derived scrypt key being encrypted again with a [ChaCha20-Poly1305](https://pkg.go.dev/golang.org/x/crypto/chacha20poly1305) [AEAD](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data_(AEAD)).
 
 ---
 
