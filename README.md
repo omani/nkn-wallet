@@ -280,7 +280,8 @@ $ nkn-wallet --path usethiswallet.json show balance -i 1
 ### Show transactions of account
 For example purposes the wallet shown in this example is a wallet with already several transactions, not the newly created one in the examples above.
 ```
-$ nkn-wallet --path usethiswallet.json show balance -i 1 Password:
+$ nkn-wallet --path usethiswallet.json show balance -i 1
+Password:
  CREATED AT          │ BLOCK HEIGHT │ TXN HASH                                                         │ SENDER                               │ RECIPIENT                            │       AMOUNT
 ─────────────────────┼──────────────┼──────────────────────────────────────────────────────────────────┼──────────────────────────────────────┼──────────────────────────────────────┼──────────────
  2023-08-05 01:58:55 │    5666741   │ 26d7c4e968a4b40a2773e74c9429b73243210981102471cae7973b3c81558510 │ NKNKQ34u5DeSxfi5VN1HDtG9iuQdhmsxAx7m │ NKNVmZQZcDrgdMJKdgRfz2gn5ZdTAyro5uHm │            0
