@@ -19,6 +19,7 @@ While nkn-wallet has its own wallet implementation the underlying SDK functional
 
 
 Features:
+* Manage all your different accounts from a central place
 * State-of-the-art encryption with [Age](https://github.com/FiloSottile/age)
 * Manage multiple accounts in a single wallet file (multiwallet capability)
 * List all your accounts
