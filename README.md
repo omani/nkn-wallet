@@ -243,14 +243,14 @@ Use "nkn-wallet [command] --help" for more information about a command.
 
 ### Create account
 ```
-$ nkn-wallet --path usethiswallet.json create --alias mynewaccount -s
+$ nkn-wallet --path usethiswallet.json create --alias mining-wallet-srv01 -s
 Password:
 Re-enter Password:
 
 Account information:
 Seed: c2017a52472f4e616b1ee028297c8609d09fdec90db8522b978df85df9a14d10
 Address: NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3
-Alias: newaccount
+Alias: mining-wallet-srv01
 Account saved successfully.
 ```
 **Note:** Use the `-s` flag to save the newly created account to the wallet!
@@ -272,28 +272,29 @@ Account saved successfully.
 ### List accounts
 ```
 $ nkn-wallet --path usethiswallet.json list
-────┼──────────────────┼──────────────────────────────────────
- ID │ ALIAS            │ ADDRESS
-────┼──────────────────┼──────────────────────────────────────
-  1 │ newaccount       │ NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3
-  2 │ github-donations │ NKND1ejSRWBExoq8t4DWpPHaK5BMBe4yifTN
+────┼─────────────────────┼──────────────────────────────────────
+ ID │ ALIAS               │ ADDRESS
+────┼─────────────────────┼──────────────────────────────────────
+  1 │ mining-wallet-srv01 │ NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3
+  2 │ github-donations    │ NKND1ejSRWBExoq8t4DWpPHaK5BMBe4yifTN
 ```
 
 ### Show account info
 ```
 $ nkn-wallet --path usethiswallet.json show info -i 1
 Password:
- ID │ ALIAS      │ ADDRESS                              │ PUBKEY                                                           │ SEED
-────┼────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────
-  1 │ newaccount │ NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3 │ d9390cfde27fb118c18e70367afb2fc4ffb17d2386c43f5b157b13c34a5b3120 │ c2017a52472f4e616b1ee028297c8609d09fdec90db8522b978df85df9a14d10
+ ID │ ALIAS               │ ADDRESS                              │ PUBKEY                                                           │ SEED
+────┼─────────────────────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────
+  1 │ mining-wallet-srv01 │ NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3 │ d9390cfde27fb118c18e70367afb2fc4ffb17d2386c43f5b157b13c34a5b3120 │ c2017a52472f4e616b1ee028297c8609d09fdec90db8522b978df85df9a14d10
+  2 │ github-donations    │ NKND1ejSRWBExoq8t4DWpPHaK5BMBe4yifTN │ a5390can3if44h44418e7036asab2xx6ffb1sas23rc43f5b157b13c34a5b2343 │ de392b438d5020b46123f461d0c1db50c2eef244fb6e213c20bfaa3a4b2ae237
 ```
 
 ### Show balance of account
 ```
 $ nkn-wallet --path usethiswallet.json show balance -i 1
- ID │ ALIAS      │ ADDRESS                              │ BALANCE
-────┼────────────┼──────────────────────────────────────┼─────────
-  1 │ newaccount │ NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3 │       0
+ ID │ ALIAS               │ ADDRESS                              │ BALANCE
+────┼─────────────────────┼──────────────────────────────────────┼─────────
+  1 │ mining-wallet-srv01 │ NKNT43Q5z863qL2wdheRqEmSgPtNDnbiLTw3 │       0
 ```
 
 ### Show transactions of account
