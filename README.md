@@ -29,6 +29,8 @@ Features:
 * Move funds between accounts in the wallet
 * Transfer funds to another NKN address
 * Restore your accounts
+* Change password of your account
+* Change or set alias of your account
 * NKN OpenAPI support
 
 # Library
