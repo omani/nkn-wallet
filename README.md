@@ -321,6 +321,7 @@ Successfully sent 1 NKN from NKNVmZQZcDrgdMJKdgRfz2gn5ZdTAyro5uHm to NKNCSjyCsuD
 
 For information refer to the help menu with `nkn-wallet help` or `nkn-wallet [cmd] help`.
 
+---
 
 # Contribution
 * You can fork this, extend it and contribute back.
