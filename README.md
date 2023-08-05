@@ -30,7 +30,7 @@ Features:
 * Transfer funds to another NKN address
 * Restore your accounts
 * Change password of your account
-* Change or set alias of your account
+* Change or set an alias for your account
 * NKN OpenAPI support
 
 # Library
