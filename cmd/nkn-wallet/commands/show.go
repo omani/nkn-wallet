@@ -57,6 +57,8 @@ func init() {
 
 	showCmd.PersistentFlags().StringVarP(&alias, "alias", "a", "", "Show balance of account with given alias.")
 	showCmd.PersistentFlags().IntVarP(&index, "index", "i", 0, "Show balance of account with given index.")
+
+	showCmd.MarkFlagsMutuallyExclusive("index", "alias")
 }
 
 func runShowBalance() error {
@@ -74,8 +76,7 @@ func runShowBalance() error {
 	var err error
 	if len(alias) > 0 {
 		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	}
-	if index > 0 {
+	} else if index > 0 {
 		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
 	}
 	checkerr(err)
@@ -109,8 +110,7 @@ func runShowInfo() error {
 
 	if len(alias) > 0 {
 		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	}
-	if index > 0 {
+	} else if index > 0 {
 		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
 	}
 	checkerr(err)
@@ -143,8 +143,7 @@ func runShowTxn() error {
 
 	if len(alias) > 0 {
 		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	}
-	if index > 0 {
+	} else if index > 0 {
 		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
 	}
 	checkerr(err)

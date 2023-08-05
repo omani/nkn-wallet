@@ -37,6 +37,8 @@ func init() {
 
 	transferCmd.MarkFlagRequired("amount")
 	transferCmd.MarkFlagRequired("to")
+
+	transferCmd.MarkFlagsMutuallyExclusive("index", "alias")
 }
 
 func runTransfer() error {
@@ -54,8 +56,7 @@ func runTransfer() error {
 	var wallet *nknwallet.Wallet
 	if len(alias) > 0 {
 		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	}
-	if index > 0 {
+	} else if index > 0 {
 		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
 	}
 	checkerr(err)

@@ -20,6 +20,8 @@ func init() {
 
 	deleteCmd.Flags().StringVarP(&alias, "alias", "a", "", "Delete account with given alias.")
 	deleteCmd.Flags().IntVarP(&index, "index", "i", 0, "Delete account with given index.")
+
+	deleteCmd.MarkFlagsMutuallyExclusive("index", "alias")
 }
 
 func runDelete() error {
@@ -31,8 +33,7 @@ func runDelete() error {
 
 	if len(alias) > 0 {
 		store.DeleteWalletByAlias(alias)
-	}
-	if index > 0 {
+	} else if index > 0 {
 		store.DeleteWalletByIndex(index)
 	}
 
