@@ -10,7 +10,7 @@ type Openapi struct {
 	wallet *Wallet
 }
 
-func New(w *Wallet) *Openapi {
+func newOpenAPI(w *Wallet) *Openapi {
 	c := client.New()
 	c.SetAddress("https://openapi.nkn.org/api/v1")
 

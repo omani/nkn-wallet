@@ -256,7 +256,7 @@ func (s *Store) SaveWallet(wallet *Wallet) error {
 }
 
 func (w *Wallet) OpenAPI() *Openapi {
-	return New(w)
+	return newOpenAPI(w)
 }
 
 // Account returns the account of the wallet.
