@@ -20,7 +20,7 @@ func init() {
 
 func runList() error {
 	store := nknwallet.NewStore(path)
-	store.ListWallets()
+	checkerr(store.ListWallets())
 
 	return nil
 }

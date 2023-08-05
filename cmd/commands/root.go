@@ -24,9 +24,9 @@ nkn-wallet is a library that implements nkn-sdk-go with a new wallet
 functionality utilizing age encryption and using the NKN OpenAPI for
 querying the NKN blockchain.
 
-The following releases will include the possibility for encryption by
+Upcoming releases will include the possibility for encryption by
 SSH public key ("ssh-ed25519 AAAA...", "ssh-rsa AAAA...") stored on disk
-or by fetching the keys from Github (github.com/[user].keys).
+or by fetching the keys from a Github user profile (github.com/[user].keys).
 
 URL: https://github.com/omani/nkn-wallet
 MIT license. Copyright (c) 2023 HAH! Sun

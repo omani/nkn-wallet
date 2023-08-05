@@ -99,7 +99,7 @@ func (s *Store) RestoreFromSeed(seed, newpassword []byte, alias string) (*Wallet
 	}
 
 	w := &Wallet{
-		ID:         len(s.wallets) + 1,
+		ID:         s.getNextID(),
 		Armor:      string(armor),
 		Alias:      alias,
 		account:    account,
@@ -110,9 +110,9 @@ func (s *Store) RestoreFromSeed(seed, newpassword []byte, alias string) (*Wallet
 
 }
 
-func (s *Store) ListWallets() {
+func (s *Store) ListWallets() error {
 	if s.wallets == nil {
-		return
+		return errors.New("No wallet found or wallet has no accounts.")
 	}
 	t := table.NewWriter()
 	// t.SetStyle(table.StyleRounded)
@@ -124,6 +124,8 @@ func (s *Store) ListWallets() {
 		t.AppendRow(table.Row{w.ID, w.Alias, w.Address()})
 	}
 	t.Render()
+
+	return nil
 }
 
 func (s *Store) save() {
@@ -199,6 +201,13 @@ func (s *Store) GetWalletByAlias(alias string, password []byte) (*Wallet, error)
 	return nil, errors.New("Wallet not found.")
 }
 
+func (s *Store) getNextID() int {
+	if s.wallets == nil {
+		return 1
+	}
+	return s.wallets[len(s.wallets)-1].ID + 1
+}
+
 func (s *Store) NewWallet(password []byte, alias string, config *nkn.WalletConfig) (*Wallet, error) {
 	account, err := nkn.NewAccount(nil)
 	if err != nil {
@@ -216,7 +225,7 @@ func (s *Store) NewWallet(password []byte, alias string, config *nkn.WalletConfi
 	}
 
 	w := &Wallet{
-		ID:         len(s.wallets) + 1,
+		ID:         s.getNextID(),
 		Armor:      string(armor),
 		Alias:      alias,
 		account:    account,
