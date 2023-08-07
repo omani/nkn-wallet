@@ -8,8 +8,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
 
+	"filippo.io/age"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/nknorg/nkn-sdk-go"
 	"github.com/nknorg/nkn/v2/common"
@@ -17,10 +19,12 @@ import (
 	"github.com/nknorg/nkn/v2/program"
 	"github.com/nknorg/nkn/v2/signature"
 	"github.com/nknorg/nkn/v2/transaction"
+	"github.com/nknorg/nkn/v2/util/password"
 )
 
 type Wallet struct {
 	ID         int    `json:"id"`
+	Type       string `json:"type"`
 	NKNAddress string `json:"address"`
 	Armor      string `json:"armor"`
 	Alias      string `json:"alias,omitempty"`
@@ -35,27 +39,39 @@ type Store struct {
 	path    string
 }
 
-func NewStore(path string) *Store {
+func NewStore(path string) (*Store, error) {
+	if len(path) == 0 {
+		return nil, errors.New("Need a file path for the wallet.")
+	}
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0644)
-	checkerr(err)
+	if err != nil {
+		return nil, err
+	}
 	defer f.Close()
 
 	dat, err := io.ReadAll(f)
-	checkerr(err)
+	if err != nil {
+		return nil, err
+	}
 
 	var wallets []*Wallet
 	if len(dat) > 0 {
 		err = json.Unmarshal(dat, &wallets)
-		checkerr(err)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Store{
 		wallets: wallets,
 		path:    path,
-	}
+	}, nil
 }
 
 func (s *Store) IsExistWalletByAlias(alias string) bool {
+	if len(alias) == 0 {
+		return false
+	}
 	for _, w := range s.wallets {
 		if w.Alias == alias {
 			return true
@@ -77,21 +93,9 @@ func (s *Store) GetWallets() []*Wallet {
 	return s.wallets
 }
 
-func (s *Store) GetWalletWithAlias(alias string) (*Wallet, error) {
-	if len(alias) == 0 {
-		return nil, errors.New("Alias is empty")
-	}
-	for _, w := range s.wallets {
-		if w.Alias == alias {
-			return w, nil
-		}
-	}
-	return nil, errors.New("Wallet not found")
-}
-
-func (s *Store) GetWalletWithIndex(index int) (*Wallet, error) {
+func (s *Store) GetWalletByIndex(index int) (*Wallet, error) {
 	if index == 0 {
-		return nil, errors.New("Index is 0")
+		return nil, errors.New("Index not set")
 	}
 	for _, w := range s.wallets {
 		if w.ID == index {
@@ -101,12 +105,29 @@ func (s *Store) GetWalletWithIndex(index int) (*Wallet, error) {
 	return nil, errors.New("Wallet not found")
 }
 
-func (s *Store) RestoreFromSeed(seed, newpassword []byte, alias string) (*Wallet, error) {
+func (s *Store) SetAlias(wallet *Wallet, alias string) error {
+	for i, w := range s.wallets {
+		if w.ID == wallet.ID {
+			s.wallets[i].Alias = alias
+			s.save()
+			return nil
+		}
+	}
+	return errors.New("Could not find wallet.")
+}
+
+func (s *Store) RestoreFromSeedByIdentity(seed []byte, identity string) (*Wallet, error) {
+	recipients, err := s.ParseIdentity(identity)
+	if err != nil {
+		return nil, err
+	}
+
 	account, err := nkn.NewAccount(seed)
 	if err != nil {
 		return nil, err
 	}
-	armor, err := encryptAccount(account, newpassword)
+
+	armor, err := encryptAccount(account, recipients)
 	if err != nil {
 		return nil, err
 	}
@@ -118,14 +139,67 @@ func (s *Store) RestoreFromSeed(seed, newpassword []byte, alias string) (*Wallet
 
 	w := &Wallet{
 		ID:         s.getNextID(),
-		Armor:      string(armor),
-		Alias:      alias,
-		account:    account,
+		Type:       "IDENTITY",
 		NKNAddress: account.WalletAddress(),
+		Armor:      string(armor),
+		Alias:      "",
 		config:     config,
+		lock:       sync.Mutex{},
+		account:    account,
 	}
 	return w, nil
 
+}
+
+func (s *Store) RestoreFromSeedByPassword(seed []byte) (*Wallet, error) {
+	pass, err := passphrasePromptForEncryption()
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := age.NewScryptRecipient(pass)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := nkn.NewAccount(seed)
+	if err != nil {
+		return nil, err
+	}
+
+	armor, err := encryptAccount(account, []age.Recipient{r})
+	if err != nil {
+		return nil, err
+	}
+
+	config, err := nkn.MergeWalletConfig(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	w := &Wallet{
+		ID:         s.getNextID(),
+		Type:       "SCRYPT",
+		NKNAddress: account.WalletAddress(),
+		Armor:      string(armor),
+		Alias:      "",
+		config:     config,
+		lock:       sync.Mutex{},
+		account:    account,
+	}
+	return w, nil
+
+}
+
+func (s *Store) PromptPassword(create bool) (string, error) {
+	if create {
+		return passphrasePromptForEncryption()
+	}
+	pass, err := password.GetPassword("")
+	if err != nil {
+		return "", err
+	}
+	return string(pass), nil
 }
 
 func (s *Store) ListWallets() error {
@@ -147,24 +221,16 @@ func (s *Store) ListWallets() error {
 	return nil
 }
 
-func (s *Store) save() {
+func (s *Store) save() error {
+	if len(s.path) == 0 {
+		return errors.New("Wallet is missing file path information.")
+	}
+
 	dat, err := json.Marshal(s.wallets)
 	if err != nil {
-		checkerr(err)
+		return err
 	}
-	err = ioutil.WriteFile(s.path, dat, 0644)
-	checkerr(err)
-}
-
-func (s *Store) DeleteWalletByAlias(alias string) {
-	var newwallets []*Wallet
-	for _, w := range s.wallets {
-		if w.Alias != alias {
-			newwallets = append(newwallets, w)
-		}
-	}
-	s.wallets = newwallets
-	s.save()
+	return ioutil.WriteFile(s.path, dat, 0644)
 }
 
 func (s *Store) DeleteWalletByIndex(index int) {
@@ -178,62 +244,87 @@ func (s *Store) DeleteWalletByIndex(index int) {
 	s.save()
 }
 
-func (s *Store) GetWalletByIndex(index int, password []byte) (*Wallet, error) {
-	for _, w := range s.wallets {
-		if w.ID == index {
-			account, err := decryptAccount(w, password)
-			if err != nil {
-				return nil, err
-			}
-
-			config, err := nkn.MergeWalletConfig(nil)
-			if err != nil {
-				return nil, err
-			}
-
-			w.account = account
-			w.config = config
-			return w, nil
-		}
-	}
-	return nil, errors.New("Wallet not found.")
-}
-
-func (s *Store) GetWalletByAlias(alias string, password []byte) (*Wallet, error) {
-	for _, w := range s.wallets {
-		if w.Alias == alias {
-			account, err := decryptAccount(w, password)
-			if err != nil {
-				return nil, err
-			}
-
-			config, err := nkn.MergeWalletConfig(nil)
-			if err != nil {
-				return nil, err
-			}
-
-			w.account = account
-			w.config = config
-			return w, nil
-		}
-	}
-	return nil, errors.New("Wallet not found.")
-}
-
 func (s *Store) getNextID() int {
 	if s.wallets == nil {
-		return 0
+		return 1
 	}
 	return s.wallets[len(s.wallets)-1].ID + 1
 }
 
-func (s *Store) NewWallet(password []byte, alias string, config *nkn.WalletConfig) (*Wallet, error) {
+func (s *Store) SetPassword(wallet *Wallet) error {
+	for i, w := range s.wallets {
+		if w.ID == wallet.ID {
+			if strings.ToLower(w.Type) != "scrypt" {
+				return errors.New("Wallet is not an scrypt type. Can't change password.")
+			}
+			restored, err := s.RestoreFromSeedByPassword(w.Seed())
+			if err != nil {
+				return err
+			}
+			s.wallets[i] = restored
+			s.save()
+		}
+	}
+
+	return nil
+}
+
+func (s *Store) getWalletByIndex(index int, identity string) (*Wallet, error) {
+	w, err := s.GetWalletByIndex(index)
+	if err != nil {
+		return nil, err
+	}
+	if w == nil {
+		return nil, errors.New("could not get wallet")
+	}
+	// this check is ok because getWalletByIndex is only called from non-password paths
+	if strings.ToLower(w.Type) == "scrypt" {
+		return nil, errors.New("Wallet is an scrypt type. Use a password to decrypt it.")
+	}
+
+	var account *nkn.Account
+
+	switch strings.ToLower(w.Type) {
+	case "scrypt":
+		account, err = decryptAccountByPassword(w)
+	case "identity":
+		account, err = decryptAccountByIdentityFile(w, identity)
+	default:
+		return nil, errors.New("Wallet is missing type information.")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, errors.New("Something went wrong.")
+	}
+
+	config, err := nkn.MergeWalletConfig(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	w.account = account
+	w.config = config
+	return w, nil
+}
+
+func (s *Store) NewWalletByIdentity(identity string, index int, config *nkn.WalletConfig) (*Wallet, error) {
+	if index > 0 {
+		return s.getWalletByIndex(index, identity)
+	}
+
+	recipients, err := s.ParseIdentity(identity)
+	if err != nil {
+		return nil, err
+	}
+
 	account, err := nkn.NewAccount(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	armor, err := encryptAccount(account, password)
+	armor, err := encryptAccount(account, recipients)
 	if err != nil {
 		return nil, err
 	}
@@ -245,13 +336,202 @@ func (s *Store) NewWallet(password []byte, alias string, config *nkn.WalletConfi
 
 	w := &Wallet{
 		ID:         s.getNextID(),
-		Armor:      string(armor),
-		Alias:      alias,
-		account:    account,
+		Type:       "IDENTITY",
 		NKNAddress: account.WalletAddress(),
+		Armor:      string(armor),
+		Alias:      "",
 		config:     config,
+		lock:       sync.Mutex{},
+		account:    account,
 	}
 	return w, nil
+}
+
+func (s *Store) NewWalletByRecipientFile(file string, index int, config *nkn.WalletConfig) (*Wallet, error) {
+	if index > 0 {
+		return s.getWalletByIndex(index, file)
+	}
+
+	recipients, err := s.ParseRecipientFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := nkn.NewAccount(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	armor, err := encryptAccount(account, recipients)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err = nkn.MergeWalletConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	w := &Wallet{
+		ID:         s.getNextID(),
+		Type:       "IDENTITY",
+		NKNAddress: account.WalletAddress(),
+		Armor:      string(armor),
+		Alias:      "",
+		config:     config,
+		lock:       sync.Mutex{},
+		account:    account,
+	}
+	return w, nil
+}
+
+func (s *Store) NewWalletByRecipient(recipient string, index int, config *nkn.WalletConfig) (*Wallet, error) {
+	if index > 0 {
+		return s.getWalletByIndex(index, recipient)
+	}
+
+	recipients, err := s.ParseRecipient(recipient)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := nkn.NewAccount(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	armor, err := encryptAccount(account, recipients)
+	if err != nil {
+		return nil, err
+	}
+
+	config, err = nkn.MergeWalletConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	w := &Wallet{
+		ID:         s.getNextID(),
+		Type:       "IDENTITY",
+		NKNAddress: account.WalletAddress(),
+		Armor:      string(armor),
+		Alias:      "",
+		config:     config,
+		lock:       sync.Mutex{},
+		account:    account,
+	}
+	return w, nil
+}
+
+func (s *Store) NewWalletByPassword(index int, config *nkn.WalletConfig) (*Wallet, error) {
+	if index > 0 {
+		w, err := s.GetWalletByIndex(index)
+		if err != nil {
+			return nil, err
+		}
+		if w == nil {
+			return nil, errors.New("could not get wallet")
+		}
+		if strings.ToLower(w.Type) == "identity" {
+			return nil, errors.New("Wallet is not an scrypt type. Use an identity file to decrypt it.")
+		}
+
+		account, err := decryptAccountByPassword(w)
+		if err != nil {
+			return nil, err
+		}
+
+		config, err := nkn.MergeWalletConfig(nil)
+		if err != nil {
+			return nil, err
+		}
+
+		w.account = account
+		w.config = config
+		return w, nil
+	}
+
+	pass, err := passphrasePromptForEncryption()
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := age.NewScryptRecipient(pass)
+	if err != nil {
+		return nil, err
+	}
+
+	account, err := nkn.NewAccount(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	armor, err := encryptAccount(account, []age.Recipient{r})
+	if err != nil {
+		return nil, err
+	}
+
+	config, err = nkn.MergeWalletConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	w := &Wallet{
+		ID:         s.getNextID(),
+		Type:       "SCRYPT",
+		NKNAddress: account.WalletAddress(),
+		Armor:      string(armor),
+		Alias:      "",
+		config:     config,
+		lock:       sync.Mutex{},
+		account:    account,
+	}
+	return w, nil
+}
+
+func (s *Store) ParseIdentity(identity string) ([]age.Recipient, error) {
+	var recipients []age.Recipient
+
+	ids, err := parseIdentitiesFile(identity)
+	if err != nil {
+		return nil, err
+	}
+	r, err := identitiesToRecipients(ids)
+	if err != nil {
+		return nil, err
+	}
+	recipients = append(recipients, r...)
+
+	return recipients, nil
+}
+
+func (s *Store) ParseRecipientFile(file string) ([]age.Recipient, error) {
+	var recipients []age.Recipient
+
+	recs, err := parseRecipientsFile(file)
+	if err != nil {
+		return nil, err
+	}
+	recipients = append(recipients, recs...)
+
+	return recipients, nil
+}
+
+func (s *Store) ParseRecipient(recipient string) ([]age.Recipient, error) {
+	var recipients []age.Recipient
+
+	r, err := parseRecipient(recipient)
+	if err, ok := err.(gitHubRecipientError); ok {
+		// dont do anything with err for now
+		_ = err
+		return nil, errors.New("Github user keys as recipient is not implemented yet.")
+	}
+	if err != nil {
+		return nil, err
+	}
+	recipients = append(recipients, r)
+
+	return recipients, nil
 }
 
 func (s *Store) SetName(index int, alias string) {
@@ -305,16 +585,14 @@ func (w *Wallet) Address() string {
 
 // VerifyPassword returns nil if provided password is the correct password of account
 func (w *Wallet) VerifyPassword(password []byte) error {
-	account, err := decryptAccount(w, password)
+	account, err := decryptAccountByPassword(w)
 	if err != nil {
 		return err
 	}
-
 	address, err := account.ProgramHash.ToAddress()
 	if err != nil {
 		return err
 	}
-
 	if address != w.Address() {
 		return errors.New("wrong password")
 	}

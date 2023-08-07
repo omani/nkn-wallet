@@ -7,7 +7,6 @@ import (
 
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/jedib0t/go-pretty/text"
-	"github.com/nknorg/nkn/v2/util/password"
 	nknwallet "github.com/omani/nkn-wallet"
 	"github.com/spf13/cobra"
 )
@@ -19,30 +18,30 @@ var showCmd = &cobra.Command{
 var balanceCmd = &cobra.Command{
 	Use:   "balance",
 	Short: "Show balance of an account in the wallet",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmd.MarkFlagRequired("index")
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(alias) == 0 && index == 0 {
-			cobra.CheckErr("Need either index or alias flag.")
-		}
 		return runShowBalance()
 	},
 }
 var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "Show account information",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmd.MarkFlagRequired("index")
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(alias) == 0 && index == 0 {
-			cobra.CheckErr("Need either index or alias flag.")
-		}
 		return runShowInfo()
 	},
 }
 var txnCmd = &cobra.Command{
 	Use:   "transactions",
 	Short: "Show the last 250 transactions of an account (from those 250 only of type TRANSFER_ASSET_TYPE)",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmd.MarkFlagRequired("index")
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(alias) == 0 && index == 0 {
-			cobra.CheckErr("Need either index or alias flag.")
-		}
 		return runShowTxn()
 	},
 }
@@ -54,31 +53,12 @@ func init() {
 	showCmd.AddCommand(balanceCmd)
 	showCmd.AddCommand(infoCmd)
 	showCmd.AddCommand(txnCmd)
-
-	showCmd.PersistentFlags().StringVarP(&alias, "alias", "a", "", "Show balance of account with given alias.")
-	showCmd.PersistentFlags().IntVarP(&index, "index", "i", 0, "Show balance of account with given index.")
-
-	showCmd.MarkFlagsMutuallyExclusive("index", "alias")
 }
 
 func runShowBalance() error {
-	if len(passwd) == 0 {
-		pass, err := password.GetPassword("")
-		if err != nil {
-			return err
-		}
-		passwd = string(pass)
-	}
-
-	store := nknwallet.NewStore(path)
-
-	var wallet *nknwallet.Wallet
-	var err error
-	if len(alias) > 0 {
-		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	} else if index > 0 {
-		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
-	}
+	store, err := nknwallet.NewStore(path)
+	checkerr(err)
+	wallet, err := getWallet(store, index)
 	checkerr(err)
 	balance, err := wallet.OpenAPI().GetBalance()
 	checkerr(err)
@@ -95,24 +75,11 @@ func runShowBalance() error {
 }
 
 func runShowInfo() error {
-	if len(passwd) == 0 {
-		pass, err := password.GetPassword("")
-		if err != nil {
-			return err
-		}
-		passwd = string(pass)
-	}
-
-	store := nknwallet.NewStore(path)
-
-	var wallet *nknwallet.Wallet
-	var err error
-
-	if len(alias) > 0 {
-		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	} else if index > 0 {
-		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
-	}
+	store, err := nknwallet.NewStore(path)
+	checkerr(err)
+	wallet, err := getWallet(store, index)
+	checkerr(err)
+	fmt.Println(wallet.ID)
 	checkerr(err)
 	t := table.NewWriter()
 	t.SetStyle(table.StyleRounded)
@@ -128,26 +95,10 @@ func runShowInfo() error {
 }
 
 func runShowTxn() error {
-	if len(passwd) == 0 {
-		pass, err := password.GetPassword("")
-		if err != nil {
-			return err
-		}
-		passwd = string(pass)
-	}
-
-	store := nknwallet.NewStore(path)
-
-	var wallet *nknwallet.Wallet
-	var err error
-
-	if len(alias) > 0 {
-		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	} else if index > 0 {
-		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
-	}
+	store, err := nknwallet.NewStore(path)
 	checkerr(err)
-
+	wallet, err := getWallet(store, index)
+	checkerr(err)
 	txn, err := wallet.OpenAPI().GetTransactions()
 	checkerr(err)
 

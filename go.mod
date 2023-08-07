@@ -9,10 +9,12 @@ require (
 	github.com/nknorg/nkn-sdk-go v1.4.6
 	github.com/nknorg/nkn/v2 v2.2.1-0.20230802141232-de5a1bcb7d18
 	github.com/omani/nkn-openapi-client v0.0.0-20230805145843-56572fd10092
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.7.1-0.20230723113155-fd865a44e3c4
+	golang.org/x/crypto v0.12.0
 )
 
 require (
+	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/go-openapi/errors v0.20.4 // indirect
 	github.com/go-openapi/strfmt v0.21.7 // indirect
@@ -35,7 +37,6 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.mongodb.org/mongo-driver v1.12.1 // indirect
-	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
