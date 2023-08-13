@@ -2,7 +2,6 @@ package commands
 
 import (
 	"encoding/hex"
-	"fmt"
 
 	"github.com/nknorg/nkn/v2/util/password"
 	nknwallet "github.com/omani/nkn-wallet"
@@ -25,31 +24,33 @@ func init() {
 	rootCmd.AddCommand(restoreCmd)
 
 	restoreCmd.Flags().StringVar(&seed, "seed", "", "Seed of the account to be restored.")
-	restoreCmd.Flags().StringVarP(&alias, "alias", "a", "", "Delete account with given alias.")
 }
 
 func runRestore() error {
-	store := nknwallet.NewStore(path)
-	if len(alias) > 0 {
-		if ok := store.IsExistWalletByAlias(alias); ok {
-			cobra.CheckErr(fmt.Sprintf("Account with alias %s already exists.", alias))
-		}
-	}
+	store, err := nknwallet.NewStore(path)
+	checkerr(err)
+
 	if len(seed) == 0 {
 		s, err := password.GetPassword("Seed")
 		checkerr(err)
 		seed = string(s)
+
 	}
-	if len(passwd) == 0 {
-		pass, err := password.GetConfirmedPassword()
-		checkerr(err)
-		passwd = string(pass)
-	}
-	seedecoded, err := hex.DecodeString(seed)
-	checkerr(err)
-	wallet, err := store.RestoreFromSeed(seedecoded, []byte(passwd), alias)
+	seedbyte, err := hex.DecodeString(seed)
 	checkerr(err)
 
+	var wallet *nknwallet.Wallet
+
+	if len(ageIdentity) > 0 {
+		wallet, err = store.RestoreFromSeedByIdentity(seedbyte, ageIdentity)
+	} else if len(ageRecipientFile) > 0 {
+		wallet, err = store.RestoreFromSeedByIdentity(seedbyte, ageIdentity)
+	} else if len(ageRecipient) > 0 {
+		wallet, err = store.RestoreFromSeedByIdentity(seedbyte, ageIdentity)
+	} else {
+		wallet, err = store.RestoreFromSeedByPassword(seedbyte)
+	}
+	checkerr(err)
 	store.SaveWallet(wallet)
 
 	return nil

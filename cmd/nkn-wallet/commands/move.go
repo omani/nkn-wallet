@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/nknorg/nkn/v2/common"
-	"github.com/nknorg/nkn/v2/util/password"
 	nknwallet "github.com/omani/nkn-wallet"
 	"github.com/spf13/cobra"
 )
@@ -37,15 +36,11 @@ func init() {
 }
 
 func runMove() error {
-	store := nknwallet.NewStore(path)
-	if len(passwd) == 0 {
-		pass, err := password.GetPassword("")
-		checkerr(err)
-		passwd = string(pass)
-	}
-	wallet, err := store.GetWalletByIndex(fromID, []byte(passwd))
+	store, err := nknwallet.NewStore(path)
 	checkerr(err)
-	recipientwallet, err := store.GetWalletWithIndex(toID)
+	wallet, err := getWallet(store, fromID)
+	checkerr(err)
+	recipientwallet, err := store.GetWalletByIndex(toID)
 	checkerr(err)
 
 	if amount == "all" {

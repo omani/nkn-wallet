@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/nknorg/nkn/v2/common"
-	"github.com/nknorg/nkn/v2/util/password"
 	nknwallet "github.com/omani/nkn-wallet"
 	"github.com/spf13/cobra"
 )
@@ -12,10 +11,10 @@ import (
 var transferCmd = &cobra.Command{
 	Use:   "transfer",
 	Short: "Transfer funds to another NKN address",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		cmd.MarkFlagRequired("index")
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(alias) == 0 && index == 0 {
-			cobra.CheckErr("Need either index or alias flag.")
-		}
 		return runTransfer()
 	},
 }
@@ -32,33 +31,18 @@ func init() {
 	transferCmd.Flags().StringVar(&to, "to", "", "NKN Address of recipient.")
 	transferCmd.Flags().StringVar(&amount, "amount", "", "Amount of funds to transfer.")
 	transferCmd.Flags().StringVar(&fee, "fee", "", "Make miners happy by specifying an optional fee for the transaction.")
-	transferCmd.PersistentFlags().StringVarP(&alias, "alias", "a", "", "Alias of account.")
-	transferCmd.PersistentFlags().IntVarP(&index, "index", "i", 0, "Index of account.")
 
 	transferCmd.MarkFlagRequired("amount")
 	transferCmd.MarkFlagRequired("to")
-
-	transferCmd.MarkFlagsMutuallyExclusive("index", "alias")
 }
 
 func runTransfer() error {
 	_, err := common.ToScriptHash(to)
 	checkerr(err)
 
-	if len(passwd) == 0 {
-		pass, err := password.GetPassword("")
-		checkerr(err)
-		passwd = string(pass)
-	}
-
-	store := nknwallet.NewStore(path)
-
-	var wallet *nknwallet.Wallet
-	if len(alias) > 0 {
-		wallet, err = store.GetWalletByAlias(alias, []byte(passwd))
-	} else if index > 0 {
-		wallet, err = store.GetWalletByIndex(index, []byte(passwd))
-	}
+	store, err := nknwallet.NewStore(path)
+	checkerr(err)
+	wallet, err := getWallet(store, index)
 	checkerr(err)
 
 	if amount == "all" {

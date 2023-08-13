@@ -15,11 +15,11 @@ var listCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-
 }
 
 func runList() error {
-	store := nknwallet.NewStore(path)
+	store, err := nknwallet.NewStore(path)
+	checkerr(err)
 	checkerr(store.ListWallets())
 
 	return nil

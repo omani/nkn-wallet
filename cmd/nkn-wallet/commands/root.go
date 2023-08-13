@@ -1,17 +1,22 @@
 package commands
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
+	nknwallet "github.com/omani/nkn-wallet"
 	"github.com/spf13/cobra"
 )
 
 // Globals
 var (
-	path  string
-	ip    string
-	index int
+	path             string
+	ip               string
+	index            int
+	ageRecipient     string
+	ageRecipientFile string
+	ageIdentity      string
 )
 
 var rootCmd = &cobra.Command{
@@ -51,7 +56,33 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&path, "path", "p", "./nkn-wallet.json", "path to wallet file")
 	rootCmd.PersistentFlags().StringVar(&ip, "ip", "mainnet-seed-0001.org", "DNS/IP of NKN remote node")
-	rootCmd.PersistentFlags().StringVar(&passwd, "password", "", "Password for the new account.")
+	rootCmd.PersistentFlags().StringVarP(&ageRecipient, "age-recipient", "r", "", "Use recipient for age encryption ['ssh-', 'age1'].")
+	rootCmd.PersistentFlags().StringVarP(&ageRecipientFile, "age-recipient-file", "R", "", "Use recipient file for age encryption [ssh public-key, age recipient].")
+	rootCmd.PersistentFlags().StringVarP(&ageIdentity, "age-identity", "i", "", "Use identity file for age decryption [ssh private key, age identity file].")
 
-	rootCmd.PersistentFlags().MarkHidden("password")
+	rootCmd.PersistentFlags().IntVar(&index, "index", 0, "Use account with index.")
+
+	rootCmd.MarkFlagsMutuallyExclusive("age-recipient", "age-recipient-file", "age-identity")
+}
+
+func getWallet(store *nknwallet.Store, index int) (*nknwallet.Wallet, error) {
+	var wallet *nknwallet.Wallet
+	var err error
+
+	if len(ageIdentity) > 0 {
+		wallet, err = store.NewWalletByIdentity(ageIdentity, index, nil)
+	} else if len(ageRecipientFile) > 0 {
+		wallet, err = store.NewWalletByRecipientFile(ageRecipientFile, index, nil)
+	} else if len(ageRecipient) > 0 {
+		wallet, err = store.NewWalletByRecipient(ageRecipient, index, nil)
+	} else {
+		wallet, err = store.NewWalletByPassword(index, nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if wallet != nil {
+		return wallet, nil
+	}
+	return nil, errors.New("Error: No wallet could be fetched.")
 }
