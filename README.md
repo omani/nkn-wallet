@@ -98,7 +98,7 @@ func main() {
 ```
 
 ### Use with nkn-sdk-go
-```go
+```
 package main
 
 import (
@@ -338,6 +338,93 @@ Use the special keyword "all" to move all funds.
 $ nkn-wallet move --from-id 11 --to-id 10 --amount all
 Password:
 Successfully sent 1 NKN from NKNCSjyCsuDbJcSrRW4kG2atu4SW6sTJkx4o to NKNVmZQZcDrgdMJKdgRfz2gn5ZdTAyro5uHm. txHash: 61c8035b27b8232faad2adf641922dea09d4e925e4e5230d73c9a55ae8917549
+```
+
+## Example with age encryption
+### Install age
+Refer to https://github.com/FiloSottile/age to see how to install age.
+
+### Create a new age identity
+```
+~ $ cd /tmp/
+/tmp $ age-keygen > ident1
+age-keygen: warning: writing secret key to a world-readable file
+Public key: age1f2fcrl2l5swmd4nquukwhh7kd8qz579usp74ee4t7gm068wqpgjqwnuldf
+```
+
+### Create another one for demonstration purposes
+```
+/tmp $ age-keygen > ident2
+age-keygen: warning: writing secret key to a world-readable file
+Public key: age1pklphvwtf6sfedu4seth44vepy597tesc4e82zsh536lj58ggp4szg25p3
+/tmp $
+```
+
+### Use newly created age identity as a recipient for new wallet
+```
+$ go run main.go create -r age1f2fcrl2l5swmd4nquukwhh7kd8qz579usp74ee4t7gm068wqpgjqwnuldf -s
+Account information:
+ID: 1
+Address: NKNEtSx32P6AnhSjdaWujE98sKZHFm2iHPSv
+Seed: 947c34c358c9157aa01e9f46d1af613ac9aed0912644fe55e9391184802d9063
+Account saved successfully.
+
+$ go run main.go create -r age1pklphvwtf6sfedu4seth44vepy597tesc4e82zsh536lj58ggp4szg25p3 -s
+Account information:
+ID: 2
+Address: NKNYzaG8M6VcBcbSyUPgak46TQRCav8LzGfQ
+Seed: 405ef86b621ebb7a3bab1de127a203778366b5abee445aaf5d40cbc7322b1c05
+Account saved successfully.
+```
+
+Now we have to accounts in the wallet. Each encrypted to the recipients above
+
+```
+$ go run main.go list
+ ID │ ALIAS │ ADDRESS
+────┼───────┼──────────────────────────────────────
+  1 │       │ NKNEtSx32P6AnhSjdaWujE98sKZHFm2iHPSv
+  2 │       │ NKNYzaG8M6VcBcbSyUPgak46TQRCav8LzGfQ
+```
+
+### Access to account will only work with identity file
+```
+$ go run main.go show info --index 1
+Error: Wallet is not an scrypt type. Use an identity file to decrypt it.
+exit status 1
+
+$ go run main.go show info --index 1 -i /tmp/ident2
+Error: no identity matched any of the recipients
+exit status 1
+
+$ go run main.go show info --index 1 -i /tmp/ident1
+ ID │ ALIAS │ ADDRESS                              │ PUBKEY                                                           │ SEED
+────┼───────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────
+  1 │       │ NKNEtSx32P6AnhSjdaWujE98sKZHFm2iHPSv │ 8a16c717629980ed7fcf93f4430300b65f1645a83020d97d9615539b5a08a499 │ 947c34c358c9157aa01e9f46d1af613ac9aed0912644fe55e9391184802d9063
+```
+
+## Example using SSH Keys
+### Create new account with SSH public key file as recipient
+```
+go run main.go create -R ~/.ssh/id_ed25519.pub -s
+Account information:
+ID: 1
+Address: NKNTNxHR3NRFHT3RGbjjwkKQzWVYF3cfraSR
+Seed: bb54ec61a42a9b1dd213a0a2e613576c17590c429c79621c6bccfc0e97d93092
+Account saved successfully.
+```
+
+### Access to account will only work with SSH private key
+```
+go run main.go show info --index 1
+Error: Wallet is not an scrypt type. Use an identity file to decrypt it.
+exit status 1
+
+go run main.go show info --index 1 -i ~/.ssh/id_ed25519
+1
+ ID │ ALIAS │ ADDRESS                              │ PUBKEY                                                           │ SEED                                   
+────┼───────┼──────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────
+  1 │       │ NKNTNxHR3NRFHT3RGbjjwkKQzWVYF3cfraSR │ 101905457c9e798d5e04fb350779d79999c4f3a9297dcdcf803d182d11ddaf17 │ bb54ec61a42a9b1dd213a0a2e613576c17590c429c79621c6bccfc0e97d93092
 ```
 
 
