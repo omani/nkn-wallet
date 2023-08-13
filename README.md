@@ -98,7 +98,7 @@ func main() {
 ```
 
 ### Use with nkn-sdk-go
-```
+```go
 package main
 
 import (
